@@ -5,10 +5,19 @@ from tkinter import *
 import tkinter.messagebox
 import os
 from PIL import Image, ImageTk
+import pyhooked
+import pyautogui
 
 class screenCapturingMainClass():
 
     filePathForTakenPicture = "Fullscreen/Image.png" #By Default :)
+    clickCount = 0
+    windows = []
+
+    mousePositionFirstClickX = 0
+    mousePositionFirstClickY = 0
+    mousePositionSecondClickX = 0
+    mousePositionSecondClickY = 0
 
     def takeFullScreenShoot(self):
         im = ImageGrab.grab()
@@ -34,10 +43,10 @@ class screenCapturingMainClass():
         try:
 
             #Connect to FTP
-            ftp = FTP("Your FTP server adress")
-            ftp.login("username", "password]")
+            ftp = FTP("FTP_Server_adress")
+            ftp.login("user", "pass")
             print("Connection Succesfull!")
-            ftp.cwd("/var/www/html/imageCasts")#Directory, where pictures will be save
+            ftp.cwd("moveWhereToSave")
             print(ftp.dir())#For printing directiory...
 
             #Take a picture
@@ -78,6 +87,16 @@ class screenCapturingMainClass():
             #Unhide Programm GUI
             root.deiconify()
 
+    def saveAreaScreenShoot(self):
+        root.wm_state('iconic')
+        print("Area!")
+        screenWindow = Tk()
+        screenCapturingMainClass.windows.append(screenWindow)
+        screenWindow.geometry("1920x1080")
+        screenWindow.bind("<Button-1>", leftClick)
+        screenWindow.attributes('-alpha', 0.01)
+        #root.deiconify()
+
     def deletePictureFromServer(self):
 
          nameForDeletingPicture = secondPictureName.get()
@@ -91,11 +110,11 @@ class screenCapturingMainClass():
 
          try:
             #Connect to FTP
-            ftp = FTP("Your FTP server adress")
-            ftp.login("username", "password]")
+            ftp = FTP("FTP_Server_adress")
+            ftp.login("user", "pass")
             print("Connection Succesfull!")
-            #Move to Picture directory
-            ftp.cwd("/var/www/html/imageCasts")
+            ftp.cwd("moveWhereToSave")
+            print(ftp.dir())#For printing directiory
             #Delete Lattest Picture or specific picture
             ftp.delete(nameForDeletingPicture)
 
@@ -116,6 +135,85 @@ class screenCapturingMainClass():
          except:
             print("Dzesanas procesaa ir radusies kluda")
             ftp.close()
+
+def leftClick(event):
+    print("start")
+
+    screenCapturingMainClass.clickCount += 1
+    if screenCapturingMainClass.clickCount == 1:
+        screenCapturingMainClass.mousePositionFirstClickX = pyautogui.position()
+        #screenCapturingMainClass.mousePositionFirstClickY = root.winfo_pointery()
+    elif screenCapturingMainClass.clickCount == 2:
+        screenCapturingMainClass.mousePositionSecondClickX = pyautogui.position()
+        print(screenCapturingMainClass.mousePositionFirstClickX[1])
+        screenCapturingMainClass.windows[0].destroy()#destroy capturing window
+        screenCapturingMainClass.windows.clear()#also clear list! :)
+        """
+        im=ImageGrab.grab(bbox=(screenCapturingMainClass.mousePositionFirstClickX[0],
+                                screenCapturingMainClass.mousePositionFirstClickX[1],
+                                screenCapturingMainClass.mousePositionSecondClickX[0],
+                                screenCapturingMainClass.mousePositionSecondClickX[1])).save("screen_capture.png")
+        """
+
+        try:
+
+            #Connect to FTP
+            ftp = FTP("FTP_Server_adress")
+            ftp.login("user", "pass")
+            print("Connection Succesfull!")
+            ftp.cwd("moveWhereToSave")
+            print(ftp.dir())#For printing directiory...
+
+            #Take a picture
+            randomNumber = random.randrange(1, 1000)
+            filePathForTakenPicture = fileName = "Image_" + str(randomNumber) + ".png"
+            print(fileName)
+            fileFullPath = "Fullscreen/Image_" + str(randomNumber) + ".png"
+            print(fileFullPath)
+            im=ImageGrab.grab(bbox=(screenCapturingMainClass.mousePositionFirstClickX[0],
+                                screenCapturingMainClass.mousePositionFirstClickX[1],
+                                screenCapturingMainClass.mousePositionSecondClickX[0],
+                                screenCapturingMainClass.mousePositionSecondClickX[1])).save(fileFullPath)
+            print("Taking picture sucessfull")
+
+            #Open saved Image and store in FTP direction
+            #image = open("Fullscreen/Image.png", "rb")
+            image = open(fileFullPath, "rb")
+            name = fileName
+            ftp.storbinary("STOR " + name, image)
+            #Priviliges to access a picture
+            ftp.sendcmd('SITE CHMOD 607 ' + fileName)
+            image.close()
+            ftp.close()
+
+            #Show GUI
+            #showGUIAfterCapturing()
+            #self.deletePictureFromServer(filePathForTakenPicture)
+
+            updateLinkBox(filePathForTakenPicture, fileFullPath)
+
+            #Unhide Programm GUI
+            root.deiconify()
+            #back counter!!! :)
+            screenCapturingMainClass.clickCount = 0
+
+            #At and, also show a picture...
+            #im.show()
+        except:
+            print("Kluuuda")
+            print(EXCEPTION)
+            ftp.close()
+
+            #Unhide Programm GUI
+            root.deiconify()
+            #Back counter! :)
+            screenCapturingMainClass.clickCount = 0
+
+        #screenCapturingMainClass.clickCount = 0
+
+        #root.deiconify()
+
+
 
 class extraFunctionsForClass():
 
@@ -218,6 +316,19 @@ button4["command"] = captureScreen.deletePictureFromServer
 button3 = Button(secondMiddleFrame, text = "Exit")
 button3.grid(row = 0, column=25, columnspan=50, rowspan=50)
 button3["command"] = extraFunctions.exitApplication
+
+button4 = Button(firstMiddleFrame, text = "Take Area ScreenShoot", fg="purple")
+button4.grid(row = 1, column=0)
+button4["command"] = captureScreen.saveAreaScreenShoot
+
+#mouseX = root.winfo_pointerx()
+#mouseY = root.winfo_pointery()
+
+#root.bind("<Button-1>", leftClick)
+"""
+print("Peles X: " + str(mouseX))
+print("Peles Y: " + str(mouseY))
+"""
 
 
 
