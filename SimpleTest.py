@@ -1,12 +1,12 @@
-import pyscreenshot as ImageGrab
+import pyscreenshot as ImageGrab2
 import random
 from ftplib import FTP
-from tkinter import *
-import tkinter.messagebox
+from Tkinter import *
 import os
-from PIL import Image, ImageTk
+from PIL import Image, ImageTk, ImageGrab
 import pyhooked
 import pyautogui
+import time
 
 class screenCapturingMainClass():
 
@@ -20,34 +20,32 @@ class screenCapturingMainClass():
     mousePositionSecondClickY = 0
 
     def takeFullScreenShoot(self):
-        im = ImageGrab.grab()
+        im = ImageGrab2.grab()
         im.show()
 
-    #takeFullScreenShoot()
-
     def saveFullScreenShoot(self):
-        randomNumber = random.randrange(1, 1000)
+        randomNumber = random.randrange(1, 10000)
         #print(randomNumber)
         fileName = "Fullscreen/Image_" + str(randomNumber) + ".png"
         #print(fileName)
-        im = ImageGrab.grab_to_file(fileName)
+        im = ImageGrab2.grab_to_file(fileName)
 
     def captureSelectedPlaceInScreen(self):
         None
 
     def saveFullScreenOnServer(self):
 
-    #First try to minimize GUI :)
+        #First try to minimize GUI :)
         root.wm_state('iconic')
-
+        #self.takeFullScreenShoot()
         try:
 
             #Connect to FTP
-            ftp = FTP("FTP_Server_adress")
-            ftp.login("user", "pass")
+            ftp = FTP("FTP_server")
+            ftp.login("username", "pass")
             print("Connection Succesfull!")
-            ftp.cwd("moveWhereToSave")
-            print(ftp.dir())#For printing directiory...
+            ftp.cwd("path_where_to_save")
+            #print(ftp.dir())#For printing directiory...
 
             #Take a picture
             randomNumber = random.randrange(1, 1000)
@@ -55,7 +53,7 @@ class screenCapturingMainClass():
             print(fileName)
             fileFullPath = "Fullscreen/Image_" + str(randomNumber) + ".png"
             print(fileFullPath)
-            im = ImageGrab.grab_to_file(fileFullPath)
+            im = ImageGrab2.grab_to_file(fileFullPath)
             print("Taking picture sucessfull")
 
             #Open saved Image and store in FTP direction
@@ -81,7 +79,7 @@ class screenCapturingMainClass():
             #im.show()
         except:
             print("Kluuuda")
-            print(EXCEPTION)
+            #print(EXCEPTION)
             ftp.close()
 
             #Unhide Programm GUI
@@ -91,8 +89,11 @@ class screenCapturingMainClass():
         root.wm_state('iconic')
         print("Area!")
         screenWindow = Tk()
+        w, h = screenWindow.winfo_screenwidth(), screenWindow.winfo_screenheight()
+        screenWindow.overrideredirect(1)
+        screenWindow.geometry("%dx%d+0+0" % (w, h))
+        #screenWindow.geometry("1920x1080")
         screenCapturingMainClass.windows.append(screenWindow)
-        screenWindow.geometry("1920x1080")
         screenWindow.bind("<Button-1>", leftClick)
         screenWindow.attributes('-alpha', 0.01)
         #root.deiconify()
@@ -107,14 +108,11 @@ class screenCapturingMainClass():
                                           "Problem deleting picture, try again latter!")
             return
 
-
          try:
             #Connect to FTP
-            ftp = FTP("FTP_Server_adress")
-            ftp.login("user", "pass")
-            print("Connection Succesfull!")
-            ftp.cwd("moveWhereToSave")
-            print(ftp.dir())#For printing directiory
+            ftp = FTP("FTP_server")
+            ftp.login("username", "pass")
+            ftp.cwd("path_where_to_save")
             #Delete Lattest Picture or specific picture
             ftp.delete(nameForDeletingPicture)
 
@@ -137,32 +135,30 @@ class screenCapturingMainClass():
             ftp.close()
 
 def leftClick(event):
-    print("start")
 
     screenCapturingMainClass.clickCount += 1
+
     if screenCapturingMainClass.clickCount == 1:
         screenCapturingMainClass.mousePositionFirstClickX = pyautogui.position()
+        print(screenCapturingMainClass.mousePositionFirstClickX[0])
+        print(screenCapturingMainClass.mousePositionFirstClickX[1])
         #screenCapturingMainClass.mousePositionFirstClickY = root.winfo_pointery()
     elif screenCapturingMainClass.clickCount == 2:
         screenCapturingMainClass.mousePositionSecondClickX = pyautogui.position()
-        print(screenCapturingMainClass.mousePositionFirstClickX[1])
+        print(screenCapturingMainClass.mousePositionSecondClickX[0]+113)
+        print(screenCapturingMainClass.mousePositionSecondClickX[1])
         screenCapturingMainClass.windows[0].destroy()#destroy capturing window
-        screenCapturingMainClass.windows.clear()#also clear list! :)
-        """
-        im=ImageGrab.grab(bbox=(screenCapturingMainClass.mousePositionFirstClickX[0],
-                                screenCapturingMainClass.mousePositionFirstClickX[1],
-                                screenCapturingMainClass.mousePositionSecondClickX[0],
-                                screenCapturingMainClass.mousePositionSecondClickX[1])).save("screen_capture.png")
-        """
+        #screenCapturingMainClass.windows.clear()#also clear list! :) THIS DOESNT WORK ON Python 2
+        screenCapturingMainClass.windows = []
 
         try:
 
             #Connect to FTP
-            ftp = FTP("FTP_Server_adress")
-            ftp.login("user", "pass")
-            print("Connection Succesfull!")
-            ftp.cwd("moveWhereToSave")
-            print(ftp.dir())#For printing directiory...
+            #Connect to FTP
+            ftp = FTP("FTP_server")
+            ftp.login("username", "pass")
+            ftp.cwd("path_where_to_save")
+            #print(ftp.dir())#For printing directiory...
 
             #Take a picture
             randomNumber = random.randrange(1, 1000)
@@ -170,7 +166,7 @@ def leftClick(event):
             print(fileName)
             fileFullPath = "Fullscreen/Image_" + str(randomNumber) + ".png"
             print(fileFullPath)
-            im=ImageGrab.grab(bbox=(screenCapturingMainClass.mousePositionFirstClickX[0],
+            im=ImageGrab2.grab(bbox=(screenCapturingMainClass.mousePositionFirstClickX[0],
                                 screenCapturingMainClass.mousePositionFirstClickX[1],
                                 screenCapturingMainClass.mousePositionSecondClickX[0],
                                 screenCapturingMainClass.mousePositionSecondClickX[1])).save(fileFullPath)
@@ -214,15 +210,14 @@ def leftClick(event):
         #root.deiconify()
 
 
-
 class extraFunctionsForClass():
 
     def printAbout(self):
-        print("Made with Love! :)")
+
         root = Tk()
 
         root.title("Simple ScreenCapturing - About")
-        root.geometry("200x100")
+        root.geometry("200x140")
 
         #Frame
         app = Frame(root)
@@ -249,13 +244,7 @@ boolTest = False
 
 
 root.title("Simple ScreenCapturing")
-root.geometry("500x300")
-
-#Frame
-
-#app = Frame(root)
-#app.grid()
-#app.pack()
+root.geometry("530x390")
 
 captureScreen = screenCapturingMainClass()
 extraFunctions = extraFunctionsForClass()
@@ -278,14 +267,6 @@ button1["command"] = captureScreen.saveFullScreenOnServer
 previewInfoLabel = Label(firstMiddleFrame, text="Picture Preview:", font=("Arial"))
 previewInfoLabel.grid(row=0, column=1, columnspan=2, rowspan=2,
            sticky=W+E+N+S, padx=195, pady=5)
-#button1.pack(fill="both", pady=20)
-#button1.pack(side=RIGHT)
-
-
-#entry_1 = Entry(root) = Ievades (Input) logs
-#ko_velies.grid(row=0, column=1, sticky=E) Sticky novietojums, EAST,WEST, lalala
-#ko_velies2.grid(columnspan = 2),aiznem vairakas kollonas
-#button_1.bind("<Button-1>", printejuVardu) #Lai pieskirtu metodi konkretai pogai
 
 #This will be a TextBox?
 textBoxFrame = Frame(root)
@@ -300,9 +281,8 @@ entry_1.grid(row =9, column = 0)
 secondMiddleFrame = Frame(root)
 secondMiddleFrame.pack(fill="both", padx= 5,pady=2) #padx=215, pady=5)
 button2 = Button(secondMiddleFrame, text = "About")
-button2.grid(row = 0, column = 0, columnspan=10, rowspan=10)
+button2.grid(row = 0, column = 0, columnspan=10, rowspan=10, pady = 10)
 button2["command"] = extraFunctions.printAbout
-#button2.pack(side = LEFT)
 
 fourthMiddleFrame = Frame(root)
 fourthMiddleFrame.pack(fill = "both", padx= 5,pady=2)
@@ -311,59 +291,17 @@ button4 = Button(fourthMiddleFrame, text = "Delete Lattest Picture")
 button4.grid(row = 9)
 button4["command"] = captureScreen.deletePictureFromServer
 
-#thirdMiddleFrame = Frame(root)
-#thirdMiddleFrame.pack(fill = "both", padx= 5,pady=2) #padx=220, pady=5)
 button3 = Button(secondMiddleFrame, text = "Exit")
-button3.grid(row = 0, column=25, columnspan=50, rowspan=50)
+button3.grid(row = 0, column=25, columnspan=50, rowspan=50, padx = 10, pady = 10)
 button3["command"] = extraFunctions.exitApplication
 
 button4 = Button(firstMiddleFrame, text = "Take Area ScreenShoot", fg="purple")
 button4.grid(row = 1, column=0)
 button4["command"] = captureScreen.saveAreaScreenShoot
 
-#mouseX = root.winfo_pointerx()
-#mouseY = root.winfo_pointery()
-
-#root.bind("<Button-1>", leftClick)
-"""
-print("Peles X: " + str(mouseX))
-print("Peles Y: " + str(mouseY))
-"""
-
-
-
-#Also for Picture =)
-
-
-#image_pil = Image.open("Fullscreen/Image.png").resize((600, 400)) #<-- resize images here
-
-
-#button3.bind("<Button-1>", exitApplication)
-#button3["command"] = extraFunctionsForClass.exitApplication
-
-#Image
-#photo = PhotoImage(file=photoURL)
-#image = Image.open(photoURL)
-#image = image.resize((250, 250), Image.ANTIALIAS)
-#image = open(photoURL)
-
-#photo = PhotoImage(file="Fullscreen/Image.png")
-
-#mint = StringVar()
-#mint.set(PathTest)
-
-#extraText = self.linkDisplayVariable.set(PathTest)
-
-#photo = PhotoImage(file=picturePathReal)
-#photoLabel = Label(root, image=photo, width=200, height=200)
-#photoLabel.pack()
-
-#event loop
-
-
 def updateLinkBox(fullPathToUpdate, directorForPicture):
 
-    prefabForURL = "http://188.226.139.74/imageCasts/"
+    prefabForURL = "URL PREFAB"
 
     linkDisplayVariable.set(prefabForURL+fullPathToUpdate)
 
@@ -373,8 +311,6 @@ def updateLinkBox(fullPathToUpdate, directorForPicture):
     print("Path to Picture:" + directorForPicture)
 
     change_picture(localPathToPicture.get())
-    #boolTest = True
-    #photo = localPathToPicture.get()
 
     print("MOMENT:" + linkDisplayVariable.get())
 
@@ -403,16 +339,7 @@ def change_picture(image):
     photoLabel.configure(image = img2)
     photoLabel.image = img2
 
-#root.bind("<Button-1>", callback)
+if __name__ == "__main__":
+    root.mainloop()
+    print("App IS GOING")
 
-#photoLabel.pack(padx=110, pady=10)#photoLabel.pack(padx=110, pady=10)
-
-#updateLinkBox("Filne")
-print("App IS GOING")
-
-root.mainloop()
-
-#saveFullScreenShoot()
-
-#For Auto Capturing, now creating a GUI
-#saveFullScreenOnServer()
