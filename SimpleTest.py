@@ -7,6 +7,7 @@ from PIL import Image, ImageTk, ImageGrab
 import pyhooked
 import pyautogui
 import time
+import uuid #Use Universally unique identifier for pictures! :D
 
 class screenCapturingMainClass():
 
@@ -49,8 +50,10 @@ class screenCapturingMainClass():
 
             #Take a picture
             randomNumber = random.randrange(1, 1000)
-            filePathForTakenPicture = fileName = "Image_" + str(randomNumber) + ".png"
-            print(fileName)
+            unique_filename = uuid.uuid4()
+            m_words = str(unique_filename).split("-")
+            print("After split " + m_words[0])
+            filePathForTakenPicture = fileName = m_words[0] + ".png"
             fileFullPath = "Fullscreen/Image_" + str(randomNumber) + ".png"
             print(fileFullPath)
             im = ImageGrab2.grab_to_file(fileFullPath)
@@ -162,7 +165,11 @@ def leftClick(event):
 
             #Take a picture
             randomNumber = random.randrange(1, 1000)
-            filePathForTakenPicture = fileName = "Image_" + str(randomNumber) + ".png"
+            unique_filename = uuid.uuid4()
+            m_words = str(unique_filename).split("-")
+            print("After split " + m_words[0])
+            filePathForTakenPicture = fileName = m_words[0] + ".png"
+            #filePathForTakenPicture = fileName = "Image_" + str(randomNumber) + ".png"
             print(fileName)
             fileFullPath = "Fullscreen/Image_" + str(randomNumber) + ".png"
             print(fileFullPath)
